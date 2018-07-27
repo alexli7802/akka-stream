@@ -14,4 +14,6 @@ lazy val root = (project in file(".")).
       "com.typesafe.akka" %% "akka-stream" % "2.5.14",
       "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.14" % Test
     )
+  ).settings(
+    assemblyJarName in assembly := "akka-stream-examples.jar"
   )
