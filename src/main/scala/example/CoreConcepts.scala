@@ -61,14 +61,14 @@ object CoreConcepts {
     
     p.success(None)
     c.cancel()
-    f.map(_ + 3)
-    
-    val r12: RunnableGraph[(Promise[Option[Int]], Cancellable, Future[Int])] = 
-      RunnableGraph.fromGraph( GraphDSL.create(source, flow, sink)((_,_,_)) { implicit builder =>
-        import GraphDSL.Implicits._
-        src ~> f ~> dst
-        ClosedShape
-      })
+//    f.map(_ + 3)
+//    
+//    val r12: RunnableGraph[(Promise[Option[Int]], Cancellable, Future[Int])] = 
+//      RunnableGraph.fromGraph( GraphDSL.create(source, flow, sink)((_,_,_)) { implicit builder =>
+//        import GraphDSL.Implicits._
+//        src ~> f ~> dst
+//        ClosedShape
+//      })
   }
   
   def makeFusion(): Unit = {
