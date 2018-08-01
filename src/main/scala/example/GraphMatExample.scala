@@ -13,8 +13,8 @@ object GraphMatExample {
       val merge = builder.add( Merge[Int](2) )
       val bcast = builder.add( Broadcast[Int](2) )
       
-      source ~> merge ~> Flow[Int].map { s => println(s); s} ~> bcast ~> Sink.ignore
-                merge <~ Flow[Int].buffer(10, OverflowStrategy.dropHead) <~ bcast
+//      source ~> merge ~> Flow[Int].map { s => println(s); s} ~> bcast ~> Sink.ignore
+//                merge <~ Flow[Int].buffer(10, OverflowStrategy.dropHead) <~ bcast
       ClosedShape
     } )
   }
