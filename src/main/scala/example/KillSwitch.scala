@@ -18,6 +18,54 @@ object KillSwitch {
   implicit val materializer = ActorMaterializer()
 
   /*
+   * Stateful partition 
+   * */
+  def try_statefulSink(): Unit = {
+    
+  }
+  
+  
+  /*
+   *  'PartitionHub' is a different flavored 'BroadcastHub' 
+   * */
+  def try_partitionHub(): Unit = {
+    // combine 'Source' with 'PartitionHub'
+    val producer = Source.tick(1.second, 1.second, "message")
+                    .zipWith(Source(1 to 100))((a,b) => s"$a-$b")
+                    
+    val runnableGraph: RunnableGraph[Source[String,NotUsed]] = producer.toMat(PartitionHub.sink(
+        (size,elem) => math.abs(elem.hashCode) % size, startAfterNrOfConsumers = 2, bufferSize = 256
+      ))(Keep.right)
+    
+    // materialization
+    val fromProducer: Source[String,NotUsed] = runnableGraph.run()
+    
+    // attache
+    fromProducer.runForeach(msg => println("consumer1: " + msg))
+    fromProducer.runForeach(msg => println("consumer2: " + msg))
+  }
+  
+  /*
+   * 'Publish-Subscribe' service based on Hubs
+   * */
+  def try_publishSubscribe(): Unit = {
+    val (sink, source) = MergeHub.source[String](perProducerBufferSize=16)
+                            .toMat(BroadcastHub.sink(bufferSize=256))(Keep.both)
+                            .run()
+                            
+    source.runWith(Sink.ignore)
+    
+    val busFlow: Flow[String,String,UniqueKillSwitch] = Flow.fromSinkAndSource(sink, source)
+                                                          .joinMat(KillSwitches.singleBidi[String,String])(Keep.right)
+                                                          .backpressureTimeout(3.seconds)
+                                                          
+    // materialization and usage
+    val switch: UniqueKillSwitch = Source.repeat("Hello world!").viaMat(busFlow)(Keep.right).to(Sink.foreach(println))
+                                    .run()
+    switch.shutdown()
+  }
+  
+  /*
    * 'BroadcastHub' allows consumers to be attached to producer at later stage. In producer's perspective, 
    * it's a Sink! 
    * */
