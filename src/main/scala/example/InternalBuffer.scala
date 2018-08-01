@@ -1,5 +1,7 @@
 package example
 
+import scala.collection.immutable
+import scala.util.Random
 import akka.stream._
 import akka.stream.scaladsl._
 import akka.actor.{ActorSystem}
@@ -10,6 +12,14 @@ object InternalBuffer {
   implicit val materializer = ActorMaterializer(
       ActorMaterializerSettings(system).withInputBuffer(initialSize=64, maxSize=64)  
     )
+    
+  def example4(): Unit = {
+    val p = 0.01
+    val sampleFlow = Flow[Double].conflateWithSeed(immutable.Seq(_)) {
+      case (acc, elem) if Random.nextDouble < p => acc :+ elem
+      case (acc, _)                             => acc
+    }.mapConcat(identity)
+  }
   
   def example3(): Unit = {
     import scala.concurrent.duration._
